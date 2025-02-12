@@ -1,5 +1,17 @@
 # Preprocessing for Machine Learning
-##Droping Missind Data
+## Exploring missing data
+###You've been given a dataset comprised of volunteer information from New York City, stored in the volunteer DataFrame. Explore the dataset using the plethora of methods and attributes pandas has to offer to answer the following question.
+#How many missing values are in the locality column?
+#Possible Answers
+# 665
+# 595 
+# 70 <<---
+# 35
+'''
+print(volunteer.isna().sum())
+'''
+
+##Droping Missing Data
 ###Now that you've explored the volunteer dataset and understand its structure and contents, it's time to begin dropping missing values.
 ###In this exercise, you'll drop both columns and rows to create a subset of the volunteer dataset.
 ###Instructions
@@ -51,11 +63,28 @@ print(volunteer.dtypes)
 #In the volunteer dataset, you're thinking about trying to predict the category_desc variable using the other features in the dataset. First, though, you need to know what the class distribution (and imbalance) is for that label.
 #Which descriptions occur less than 50 times in the volunteer dataset?
 #Possible Answers
-# Emergency Perpardness
+# Emergency Preparedness
 # Health
 # Environment
 # Environment and Emergency Preparedness  <<-----
 # All of the above
 print(volunteer.value_counts("category_desc")
 
-##
+## Stratified sampling
+#You now know that the distribution of class labels in the category_desc column of the volunteer dataset is uneven. If you wanted to train a model to predict category_desc, you'll need to ensure that the model is trained on a sample of data that is representative of the entire dataset. Stratified sampling is a way to achieve this!
+#Create a DataFrame of features, X, with all of the columns except category_desc.
+#Create a DataFrame of labels, y from the category_desc column.
+#Split X and y into training and test sets, ensuring that the class distribution in the labels is the same in both sets
+#Print the labels and counts in y_train using .value_counts().
+
+# Create a DataFrame with all columns except category_desc
+X = volunteer.drop("category_desc", axis=1)
+
+# Create a category_desc labels dataset
+y = volunteer[["category_desc"]]
+
+# Use stratified sampling to split up the dataset according to the y dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=42)
+
+# Print the category_desc counts from y_train
+print(y_train["category_desc"].value_counts())
