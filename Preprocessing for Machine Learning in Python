@@ -1,30 +1,35 @@
+# Preprocessing for Machine Learning
 ##Droping Missind Data
-#Now that you've explored the volunteer dataset and understand its structure and contents, it's time to begin dropping missing values.
-#In this exercise, you'll drop both columns and rows to create a subset of the volunteer dataset.
-#Instructions
-#Drop the Latitude and Longitude columns from volunteer, storing as volunteer_cols.
-#Subset volunteer_cols by dropping rows containing missing values in the category_desc, and store in a new variable called volunteer_subset.
-#Take a look at the .shape attribute of volunteer_subset, to verify it worked correctly.
+###Now that you've explored the volunteer dataset and understand its structure and contents, it's time to begin dropping missing values.
+###In this exercise, you'll drop both columns and rows to create a subset of the volunteer dataset.
+###Instructions
+###Drop the Latitude and Longitude columns from volunteer, storing as volunteer_cols.
+###Subset volunteer_cols by dropping rows containing missing values in the category_desc, and store in a new variable called volunteer_subset.
+###Take a look at the .shape attribute of volunteer_subset, to verify it worked correctly.
 
-## Drop the Latitude and Longitude columns from volunteer
+### Drop the Latitude and Longitude columns from volunteer
+'''
 volunteer_cols = volunteer.drop(["Latitude", "Longitude"], axis=1)
-
-# Drop rows with missing category_desc values from volunteer_cols
+'''
+### Drop rows with missing category_desc values from volunteer_cols
+'''
 volunteer_subset = volunteer_cols.dropna(subset=["category_desc"])
-
-# Print out the shape of the subset
+'''
+### Print out the shape of the subset
+'''
 print(volunteer_subset.shape)
+'''
+#Exploring data types
+###Taking another look at the dataset comprised of volunteer information from New York City, you want to know what types you'll be working with as you start to do more preprocessing.
 
-##Exploring data types
-#Taking another look at the dataset comprised of volunteer information from New York City, you want to know what types you'll be working with as you start to do more preprocessing.
-
-#Which data types are present in the volunteer dataset?
-# Floats and integers only
-# Integers only
-# Floats, integers, and objects <<------
-# Floats only
+###Which data types are present in the volunteer dataset?
+'''
+Floats and integers only
+Integers only
+Floats, integers, and objects <<------
+Floats only
 print(volunteer.dtypes)
-
+'''
 ##Converting a column type
 # If you take a look at the volunteer dataset types, you'll see that the column hits is type object. But, if you actually look at the column, you'll see that it consists of integers. Let's convert that column to type int.
 #Instructions
@@ -52,3 +57,5 @@ print(volunteer.dtypes)
 # Environment and Emergency Preparedness  <<-----
 # All of the above
 print(volunteer.value_counts("category_desc")
+
+##
