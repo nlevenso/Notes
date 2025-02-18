@@ -160,6 +160,7 @@ print(wine.Proline_log.var())
 #The mean Malic acid is greater than the mean Ash.
 wine[["Ash", "Alcalinity of ash", "Magnesium"]].describe()
 
+#Since we know that the Ash, Alcalinity of ash, and Magnesium columns in the wine dataset are all on different scales, let's standardize them in a way that allows for use in a linear model.
 #Instructions
 #Import the StandardScaler class.
 #Instantiate a StandardScaler() and store it in the variable, scaler.
@@ -217,3 +218,134 @@ knn.fit(X_train_scaled, y_train)
 
 # Score the model on the test data
 print(knn.score(X_test_scaled, y_test))
+
+## Feature Engineering
+#Which of the following examples are good candidates for creating new features?
+#A column of timestamps
+#A column of newspaper headlines
+#A column of weight measurements
+#1 and 2 <<---
+# None of the above
+#Note: timestamps can be broken into days or months, and headlines can be used for natural language processing
+
+## Identifying areas for feature engineering
+#Take an exploratory look at the volunteer dataset.
+#Which of the following columns would you want to perform a feature engineering task on?
+#vol_requests
+#title
+#created_date
+#category_desc
+#2, 3, and 4  <<---
+volunteer[['vol_requests','title','created_date','category_desc']].head()
+
+##Encoding categorical variables - binary
+#Take a look at the hiking dataset. There are several columns here that need encoding before they can be modeled, one of which is the Accessible column. Accessible is a binary feature, so it has two values, Y or N, which need to be encoded into 1's and 0's. Use scikit-learn's LabelEncoder method to perform this transformation.
+#Instructions
+#Store LabelEncoder() in a variable named enc.
+#Using the encoder's .fit_transform() method, encode the hiking dataset's "Accessible" column. Call the new column Accessible_enc.
+#Compare the two columns side-by-side to see the encoding.
+# Set up the LabelEncoder object
+enc = LabelEncoder()
+
+# Apply the encoding to the "Accessible" column
+hiking["Accessible_enc"] = enc.fit_transform(hiking["Accessible"])
+
+# Compare the two columns
+print(hiking[["Accessible", "Accessible_enc"]].head())
+
+## Encoding categorical variables - one-hot
+#One of the columns in the volunteer dataset, category_desc, gives category descriptions for the volunteer opportunities listed. Because it is a categorical variable with more than two categories, we need to use one-hot encoding to transform this column numerically. Use pandas' pd.get_dummies() function to do so.
+#Instructions
+#Call get_dummies() on the volunteer["category_desc"] column to create the encoded columns and assign it to category_enc.
+#Print out the .head() of the category_enc variable to take a look at the encoded columns.
+
+# Transform the category_desc column
+category_enc = pd.get_dummies(volunteer["category_desc"])
+
+# Take a look at the encoded columns
+print(category_enc.head())
+
+##Aggregating numerical features
+#A good use case for taking an aggregate statistic to create a new feature is when you have many features with similar, related values. Here, you have a DataFrame of running times named running_times_5k. For each name in the dataset, take the mean of their 5 run times.
+#Instructions
+#Use the .loc[] method to select all rows and columns to find the .mean() of the each columns.
+#Print the .head() of the DataFrame to see the mean column.
+
+# Use .loc to create a mean column
+running_times_5k["mean"] = running_times_5k.loc[:, "run1":"run5"].mean(axis=1)
+
+# Take a look at the results
+print(running_times_5k.head())
+
+##Extracting datetime components
+#There are several columns in the volunteer dataset comprised of datetimes. Let's take a look at the start_date_date column and extract just the month to use as a feature for modeling.
+#Instructions
+#Convert the start_date_date column into a pandas datetime column and store it in a new column called start_date_converted.
+#Retrieve the month component of start_date_converted and store it in a new column called start_date_month.
+#Print the .head() of just the start_date_converted and start_date_month columns.
+
+# First, convert string column to date column
+volunteer["start_date_converted"] = pd.to_datetime(volunteer["start_date_date"])
+
+# Extract just the month from the converted column
+volunteer["start_date_month"] = volunteer["start_date_converted"].dt.month
+
+# Take a look at the converted and new month columns
+print(volunteer[["start_date_converted", "start_date_month"]].head())
+
+##Extracting string patterns
+#The Length column in the hiking dataset is a column of strings, but contained in the column is the mileage for the hike. We're going to extract this mileage using regular expressions, and then use a lambda in pandas to apply the extraction to the DataFrame.
+#Instructions
+#Search the text in the length argument for numbers and decimals using an appropriate pattern.
+#Extract the matched pattern and convert it to a float.
+#Apply the return_mileage() function to each row in the hiking["Length"] column.
+
+## Write a pattern to extract numbers and decimals
+def return_mileage(length):
+    
+    # Search the text for matches
+    mile = re.search("\d+\.\d+", length)
+#Note:Pattern Matching: Inside the function, the re.search("\d+\.\d+", length) is used. This line utilizes a regular expression to search for patterns in the length argument. The pattern \d+\.\d+ is a regular expression that matches sequences of digits that include a decimal point. Specifically:
+#Note: \d+ matches one or more digits.
+#Note: \. matches the decimal point.
+#Note: \d+ again matches one or more digits following the decimal point. This pattern effectively captures numbers with decimals, which are likely to represent mileage in the context of the exercise.
+    # If a value is returned, use group(0) to return the found value
+    if mile is not None:
+        return float(mile.group(0))
+        
+# Apply the function to the Length column and take a look at both columns
+hiking["Length_num"] = hiking["Length"].apply(return_mileage)
+print(hiking[["Length", "Length_num"]].head())
+
+##Vectoruzing text
+#You'll now transform the volunteer dataset's title column into a text vector, which you'll use in a prediction task in the next exercise
+#Instructions
+#Store the volunteer["title"] column in a variable named title_text.
+#Instantiate a TfidfVectorizer as tfidf_vec.
+#Transform the text in title_text into a tf-idf vector using tfidf_vec.
+
+# Take the title text
+title_text = volunteer["title"]
+
+# Create the vectorizer method
+tfidf_vec = TfidfVectorizer()
+
+# Transform the text into tf-idf vectors
+text_tfidf = tfidf_vec.fit_transform(title_text)
+
+##Text classification using tf/idf vectors
+#Now that you've encoded the volunteer dataset's title column into tf/idf vectors, you'll use those vectors to predict the category_desc column.
+#Instructions
+#Split the text_tfidf vector and y target variable into training and test sets, setting the stratify parameter equal to y, since the class distribution is uneven. Notice that we have to run the .toarray() method on the tf/idf vector, in order to get in it the proper format for scikit-learn.
+#Fit the X_train and y_train data to the Naive Bayes model, nb.
+#Print out the test set accuracy.
+
+# Split the dataset according to the class distribution of category_desc
+y = volunteer["category_desc"]
+X_train, X_test, y_train, y_test = train_test_split(text_tfidf.toarray(), y, stratify=y, random_state=42)
+
+# Fit the model to the training data
+nb.fit(X_train, y_train)
+
+# Print out the model's accuracy
+print(nb.score(X_test, y_test))
